@@ -79,7 +79,7 @@ import Data.Time (utc, localTimeToUTC)
 import Data.Typeable (Typeable)
 import System.Environment (getEnvironment)
 
-import Database.Persist.Sql
+import Database.Persist.Sql hiding (mkColumns)
 import qualified Database.Persist.Sql.Util as Util
 import Control.Exception (Exception, throwIO)
 import Data.Char (isSpace)

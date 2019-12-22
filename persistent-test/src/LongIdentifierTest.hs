@@ -9,6 +9,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 module LongIdentifierTest where
 
 import Database.Persist.TH
@@ -28,12 +29,12 @@ TableAnExtremelyFantasticallySuperLongNameChild
     columnAnExtremelyFantasticallySuperLongNameParentId TableAnExtremelyFantasticallySuperLongNameParentId
 |]
 
-specs :: Spec
-specs = describe "Migration" $ do
-    it "is idempotent" $ db $ do
+specsWith :: (MonadIO m) => RunDb SqlBackend m -> Spec
+specsWith runDb = describe "Migration" $ do
+    it "is idempotent" $ runDb $ do
       again <- getMigration longIdentifierMigrate
       liftIO $ again @?= []
-    it "really is idempotent" $ db $ do
+    it "really is idempotent" $ runDb $ do
       runMigration longIdentifierMigrate
       again <- getMigration longIdentifierMigrate
       liftIO $ again @?= []
