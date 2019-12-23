@@ -26,10 +26,8 @@ module Database.Persist.Postgresql
     ) where
 
 import qualified Database.PostgreSQL.LibPQ as LibPQ
-import Database.Persist.Sql hiding (mkColumns)
+import Database.Persist.Sql
 import qualified Database.Persist.Sql.Util as Util
-import Database.Persist.Sql.Types.Internal (mkPersistBackend)
-import Data.Fixed (Pico)
 
 import qualified Database.PostgreSQL.Simple as PG
 import qualified Database.PostgreSQL.Simple.Internal as PG
@@ -78,12 +76,6 @@ import Data.Text.Read (rational)
 import Data.Time (utc, localTimeToUTC)
 import Data.Typeable (Typeable)
 import System.Environment (getEnvironment)
-
-import Database.Persist.Sql hiding (mkColumns)
-import qualified Database.Persist.Sql.Util as Util
-import Control.Exception (Exception, throwIO)
-import Data.Char (isSpace)
-import Database.Persist.Quasi (nullable)
 
 -- | A @libpq@ connection string.  A simple example of connection
 -- string would be @\"host=localhost port=5432 user=test
@@ -582,7 +574,7 @@ migrate' allDefs getter entity = fmap (fmap $ map showAlterDb) $ do
                  in  acs' ++ ats'
        where
          old' = partitionEithers old''
-         (newcols', udefs, fdefs) = mkColumns allDefs entity
+         (newcols', udefs, fdefs) = postgresMkColumns allDefs entity
          newcols = filter (not . safeToRemove entity . cName) newcols'
          udspair = map udToPair udefs
          excludeForeignKeys (xs,ys) = (map excludeForeignKey xs,ys)
@@ -1217,7 +1209,7 @@ mockMigrate allDefs _ entity = fmap (fmap $ map showAlterDb) $ do
                  in  acs' ++ ats'
        where
          old' = partitionEithers old''
-         (newcols', udefs, fdefs) = mkColumns allDefs entity
+         (newcols', udefs, fdefs) = postgresMkColumns allDefs entity
          newcols = filter (not . safeToRemove entity . cName) newcols'
          udspair = map udToPair udefs
             -- Check for table existence if there are no columns, workaround
@@ -1317,57 +1309,6 @@ migrateEnableExtension extName = WriterT $ WriterT $ do
     then return (((), []) , [(False, "CREATe EXTENSION \"" <> extName <> "\"")])
     else return (((), []), [])
 
+postgresMkColumns :: [EntityDef] -> EntityDef -> ([Column], [UniqueDef], [ForeignDef])
+postgresMkColumns allDefs t = mkColumns allDefs t (emptyBackendSpecificOverrides {backendSpecificForeignKeyName = Just refName})
 
--- | Create the list of columns for the given entity.
---
--- This is copied from Database.Persist.Sql.Internal, but uses the custom Postgres refName function
-mkColumns :: [EntityDef] -> EntityDef -> ([Column], [UniqueDef], [ForeignDef])
-mkColumns allDefs t =
-    (cols, entityUniques t, entityForeigns t)
-  where
-    cols :: [Column]
-    cols = map go (entityFields t)
-
-    tn :: DBName
-    tn = entityDB t
-
-    go :: FieldDef -> Column
-    go fd =
-        Column
-            (fieldDB fd)
-            (nullable (fieldAttrs fd) /= NotNullable || entitySum t)
-            (fieldSqlType fd)
-            (defaultAttribute $ fieldAttrs fd)
-            Nothing
-            (maxLen $ fieldAttrs fd)
-            (ref (fieldDB fd) (fieldReference fd) (fieldAttrs fd))
-
-    maxLen :: [Attr] -> Maybe Integer
-    maxLen [] = Nothing
-    maxLen (a:as)
-        | Just d <- T.stripPrefix "maxlen=" a =
-            case reads (T.unpack d) of
-              [(i, s)] | all isSpace s -> Just i
-              _ -> error $ "Could not parse maxlen field with value " ++
-                           show d ++ " on " ++ show tn
-        | otherwise = maxLen as
-
-    ref :: DBName
-        -> ReferenceDef
-        -> [Attr]
-        -> Maybe (DBName, DBName) -- table name, constraint name
-    ref c fe []
-        | ForeignRef f _ <- fe =
-            Just (resolveTableName allDefs f, refName tn c)
-        | otherwise = Nothing
-    ref _ _ ("noreference":_) = Nothing
-    ref c _ (a:_)
-        | Just x <- T.stripPrefix "reference=" a =
-            Just (DBName x, refName tn c)
-    ref c x (_:as) = ref c x as
-
-resolveTableName :: [EntityDef] -> HaskellName -> DBName
-resolveTableName [] (HaskellName hn) = error $ "Table not found: " ++ T.unpack hn
-resolveTableName (e:es) hn
-    | entityHaskell e == hn = entityDB e
-    | otherwise = resolveTableName es hn

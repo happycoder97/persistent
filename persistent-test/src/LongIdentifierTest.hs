@@ -15,14 +15,8 @@ module LongIdentifierTest where
 import Database.Persist.TH
 import Init
 
--- This test is designed to create very long identifier names
-
--- MySQL: This test is disabled for MySQL because MySQL requires you to truncate long identifiers yourself. Good easy issue to fix 
--- Postgres automatically truncates too long identifiers to a combination of:
--- truncatedTableName + "_" + truncatedColumnName + "_fkey"
--- 
-
-share [mkPersist sqlSettings, mkMigrate "longIdentifierMigrate", mkDeleteCascade sqlSettings] [persistLowerCase|
+-- This test creates very long identifier names. The generated foreign key is over the length limit for Postgres and MySQL
+share [mkPersist sqlSettings, mkMigrate "migration", mkDeleteCascade sqlSettings] [persistLowerCase|
 TableAnExtremelyFantasticallySuperLongNameParent
     field1 Int
 TableAnExtremelyFantasticallySuperLongNameChild
@@ -30,11 +24,11 @@ TableAnExtremelyFantasticallySuperLongNameChild
 |]
 
 specsWith :: (MonadIO m) => RunDb SqlBackend m -> Spec
-specsWith runDb = describe "Migration" $ do
-    it "is idempotent" $ runDb $ do
-      again <- getMigration longIdentifierMigrate
+specsWith runDb = describe "Long identifiers" $ do
+    it "migrating is idempotent" $ runDb $ do
+      again <- getMigration migration
       liftIO $ again @?= []
-    it "really is idempotent" $ runDb $ do
-      runMigration longIdentifierMigrate
-      again <- getMigration longIdentifierMigrate
+    it "migrating really is idempotent" $ runDb $ do
+      runMigration migration
+      again <- getMigration migration
       liftIO $ again @?= []

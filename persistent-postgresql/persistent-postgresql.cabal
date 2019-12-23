@@ -16,7 +16,7 @@ extra-source-files: ChangeLog.md
 
 library
     build-depends:   base                  >= 4.9      && < 5
-                   , persistent            >= 2.10     && < 3
+                   , persistent            >= 2.11     && < 3
                    , aeson                 >= 1.0
                    , blaze-builder
                    , bytestring            >= 0.10

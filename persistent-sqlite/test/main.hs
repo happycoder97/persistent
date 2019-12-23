@@ -37,6 +37,7 @@ import qualified SumTypeTest
 import qualified TransactionLevelTest
 import qualified UniqueTest
 import qualified UpsertTest
+import qualified LongIdentifierTest
 
 import Control.Exception (handle, IOException)
 import Control.Monad.Catch (catch)
@@ -147,6 +148,7 @@ main = do
       , CustomPrimaryKeyReferenceTest.migration
       , MigrationColumnLengthTest.migration
       , TransactionLevelTest.migration
+      , LongIdentifierTest.migration
       ]
     PersistentTest.cleanDB
 
@@ -205,6 +207,7 @@ main = do
     EquivalentTypeTest.specsWith db
     TransactionLevelTest.specsWith db
     MigrationTest.specsWith db
+    LongIdentifierTest.specsWith db
 
     it "issue #328" $ asIO $ runSqliteInfo (mkSqliteConnectionInfo ":memory:") $ do
         runMigration migrateAll
