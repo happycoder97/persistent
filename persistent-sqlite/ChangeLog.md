@@ -1,5 +1,9 @@
 # Changelog for persistent-sqlite
 
+## 2.10.6
+
+* Compatibility with latest persistent
+
 ## 2.10.5
 
 * Foreign keys table constraints are correctly generated [#945](https://github.com/yesodweb/persistent/pull/945) @kderme

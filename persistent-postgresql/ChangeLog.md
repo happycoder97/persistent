@@ -1,5 +1,9 @@
 # Changelog for persistent-postgresql
 
+## 2.10.2
+
+* Handle foreign key constraint names over 63 characters. See [#996](https://github.com/yesodweb/persistent/pull/996) for details.
+
 ## 2.10.1
 
 * Added support for the `constraint=` attribute to the Postgresql backend. [#979](https://github.com/yesodweb/persistent/pull/979)

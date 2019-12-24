@@ -387,7 +387,7 @@ showSqlType SqlBool = "BOOLEAN"
 showSqlType (SqlOther t) = t
 
 sqliteMkColumns :: [EntityDef] -> EntityDef -> ([Column], [UniqueDef], [ForeignDef])
-sqliteMkColumns allDefs t = mkColumns allDefs t (emptyBackendSpecificOverrides {backendSpecificForeignKeyName = Nothing})
+sqliteMkColumns allDefs t = mkColumns allDefs t emptyBackendSpecificOverrides
 
 migrate' :: [EntityDef]
          -> (Text -> IO Statement)
