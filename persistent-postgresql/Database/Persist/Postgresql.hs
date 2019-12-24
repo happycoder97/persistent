@@ -26,8 +26,6 @@ module Database.Persist.Postgresql
     ) where
 
 import qualified Database.PostgreSQL.LibPQ as LibPQ
-import Database.Persist.Sql
-import qualified Database.Persist.Sql.Util as Util
 
 import qualified Database.PostgreSQL.Simple as PG
 import qualified Database.PostgreSQL.Simple.Internal as PG
@@ -76,6 +74,9 @@ import Data.Text.Read (rational)
 import Data.Time (utc, localTimeToUTC)
 import Data.Typeable (Typeable)
 import System.Environment (getEnvironment)
+
+import Database.Persist.Sql
+import qualified Database.Persist.Sql.Util as Util
 
 -- | A @libpq@ connection string.  A simple example of connection
 -- string would be @\"host=localhost port=5432 user=test
@@ -521,8 +522,8 @@ builtinGetters = I.fromList
         -- because the usual way of checking NULLs
         -- (c.f. withStmt') won't check for NULL inside
         -- arrays---or any other compound structure for that matter.
-        listOf f = convertPV (PersistList . map (maybeNullable f) . PG.fromPGArray)
-          where maybeNullable = maybe PersistNull
+        listOf f = convertPV (PersistList . map (nullable f) . PG.fromPGArray)
+          where nullable = maybe PersistNull
 
 getGetter :: PG.Connection -> PG.Oid -> Getter PersistValue
 getGetter _conn oid
@@ -639,9 +640,6 @@ data AlterColumn = ChangeType SqlType Text
                  | IsNull | NotNull | Add' Column | Drop SafeToRemove
                  | Default Text | NoDefault | Update' Text
                  | AddReference DBName [DBName] [Text] | DropReference DBName
-
--- mkAddReference :: DBName [DBName] [Text]
--- mkAddReference name tables columns = AddReference fkeyname t2 id2
 
 type AlterColumn' = (DBName, AlterColumn)
 

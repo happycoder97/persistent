@@ -184,6 +184,7 @@ main = do
     MigrationIdempotencyTest.specsWith db
     CustomConstraintTest.specs db
     -- MySQL currently fails this test, because it has a limit of 64 characters for identifiers
+    -- TODO: implement automatic truncation for too long foreign keys
     -- LongIdentifierTest.specsWith db
 
 roundFn :: RealFrac a => a -> Integer
