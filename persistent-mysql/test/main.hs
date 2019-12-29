@@ -185,7 +185,8 @@ main = do
     CustomConstraintTest.specs db
     -- MySQL currently fails this test, because it has a limit of 64 characters for identifiers
     -- TODO: implement automatic truncation for too long foreign keys
-    -- LongIdentifierTest.specsWith db
+    xdescribe "MySQL currently fails because of 64 character limit for identifiers (# issue number)" $
+        LongIdentifierTest.specsWith db
 
 roundFn :: RealFrac a => a -> Integer
 roundFn = round
