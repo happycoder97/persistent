@@ -1,5 +1,6 @@
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RecordWildCards #-}
+
 -- | Intended for creating new backends.
 module Database.Persist.Sql.Internal
     ( mkColumns
