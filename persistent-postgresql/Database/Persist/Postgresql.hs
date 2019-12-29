@@ -3,7 +3,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE MultiWayIf #-}
 
 -- | A postgresql backend for persistent.
 module Database.Persist.Postgresql
@@ -1174,10 +1173,10 @@ refName (DBName table) (DBName column) =
       -- Approximation of the algorithm Postgres uses to truncate identifiers
       -- See makeObjectName https://github.com/postgres/postgres/blob/5406513e997f5ee9de79d4076ae91c04af0c52f6/src/backend/commands/indexcmds.c#L2074-L2080
       shortenNames :: Int -> (Int, Int) -> (Int, Int)
-      shortenNames overhead (x, y) =
-        if | x + y + overhead <= maximumIdentifierLength -> (x, y)
-           | x > y -> shortenNames overhead (x - 1, y)
-           | otherwise -> shortenNames overhead (x, y - 1)
+      shortenNames overhead (x, y)
+           | x + y + overhead <= maximumIdentifierLength = (x, y)
+           | x > y = shortenNames overhead (x - 1, y)
+           | otherwise = shortenNames overhead (x, y - 1)
 
 -- | Postgres' default maximum identifier length in bytes
 -- (You can re-compile Postgres with a new limit, but I'm assuming that virtually noone does this).

@@ -183,9 +183,8 @@ main = do
 
     MigrationIdempotencyTest.specsWith db
     CustomConstraintTest.specs db
-    -- MySQL currently fails this test, because it has a limit of 64 characters for identifiers
-    -- TODO: implement automatic truncation for too long foreign keys
-    xdescribe "MySQL currently fails because of 64 character limit for identifiers (# issue number)" $
+    -- TODO: implement automatic truncation for too long foreign keys, so we can run this test.
+    xdescribe "The migration for this test currently fails because of MySQL's 64 character limit for identifiers. See https://github.com/yesodweb/persistent/issues/1000 for details" $
         LongIdentifierTest.specsWith db
 
 roundFn :: RealFrac a => a -> Integer

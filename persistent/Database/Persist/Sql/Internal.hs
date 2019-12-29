@@ -19,10 +19,18 @@ import Database.Persist.Sql.Types
 import Database.Persist.Types
 import Data.Maybe (fromMaybe)
 
+-- | Record of functions to override the default behavior in 'mkColumns'.
+-- It is recommended you initialize this with 'emptyBackendSpecificOverrides' and override the default values,
+-- so that as new fields are added, your code still compiles.
+--
+-- @since 2.11
 data BackendSpecificOverrides = BackendSpecificOverrides
     { backendSpecificForeignKeyName :: Maybe (DBName -> DBName -> DBName)
     }
 
+-- | Creates an empty 'BackendSpecificOverrides' (i.e. use the default behavior; no overrides)
+--
+-- @since 2.11
 emptyBackendSpecificOverrides :: BackendSpecificOverrides
 emptyBackendSpecificOverrides = BackendSpecificOverrides Nothing
 
